@@ -12,7 +12,7 @@ The model accurately identifies food items from user-uploaded images and provide
 
 By focusing on traditional Indian cuisine, NutriScan is especially useful for users who want to understand the nutritional value of home-cooked meals and regional dishes.
 
-
+🔗 **Try the Telegram Bot:** https://t.me/indian_food_nutrition_bot
 ---
 
 ## 🤖 How the Telegram Bot Works
