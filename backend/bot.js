@@ -4,10 +4,15 @@ import axios from "axios";
 import { analyzeFood } from "./services/analyzeFood.js";
 import "dotenv/config"; 
 
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+const isDev = process.env.NODE_ENV === "development";
 
-// LOAD YOLO MODEL AT STARTUP
-//await loadModel();
+export const bot = new TelegramBot(
+  process.env.TELEGRAM_BOT_TOKEN,
+  isDev ? { polling: true } : { webHook: true }
+);
+
+console.log(`🤖 Bot started in ${isDev ? "POLLING" : "WEBHOOK"} mode`);
+
 
 console.log("🤖 Bot started and model loaded");
 

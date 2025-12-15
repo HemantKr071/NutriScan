@@ -1,41 +1,36 @@
 import express from "express";
-import multer from "multer";
-import fs from "fs";
-import { analyzeFood } from "./services/analyzeFood.js";
-import { loadModel } from "./ai/yolo.js";
-import "dotenv/config"; 
-const app = express();
-const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
+import "dotenv/config";
+import { bot } from "./bot.js";
 
-// Health check
+const app = express();
+app.use(express.json());
+
+const PORT = process.env.PORT || 8080;
+const isProd = process.env.NODE_ENV === "production";
+
+// HEALTH CHECK
 app.get("/", (_, res) => {
   res.send("✅ NutriScan Server is running");
 });
 
-//Image → Food → Nutrition
-app.post("/analyze", upload.single("image"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No image uploaded" });
-    }
+// TELEGRAM WEBHOOK (PROD ONLY)
+if (isProd) {
+  app.post(`/webhook/${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
+    bot.processUpdate(req.body);
+    res.sendStatus(200);
+  });
+}
 
-    const imageBuffer = req.file.buffer;
+app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`);
 
-    // Main pipeline: YOLO → Food → Nutrition
-    const analysis = await analyzeFood(imageBuffer);
+  if (isProd) {
+    const webhookUrl =
+      `${process.env.RENDER_EXTERNAL_URL}/webhook/${process.env.TELEGRAM_BOT_TOKEN}`;
 
-    res.json({
-      success: true,
-      count: analysis.length,
-      results: analysis
-    });
-
-  } catch (err) {
-    console.error("❌ Analysis error:", err);
-    res.status(500).json({ error: "Food analysis failed" });
+    await bot.setWebHook(webhookUrl);
+    console.log("Webhook set:", webhookUrl);
+  } else {
+    console.log(" Running in DEV mode (polling enabled)");
   }
-});
-
-app.listen(8080, () => {
-  console.log("Server running at http://localhost:8080");
 });
