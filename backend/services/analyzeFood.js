@@ -4,8 +4,8 @@ import { getNutrition } from "../nutrition/usda.js";
 export async function analyzeFood(imageBuffer) {
   const detections = await detectObjects(imageBuffer);
 
-  // Extract only food class names
-  const foods = detections.map(d => d[4]);
+  // Extract only unique food class names
+  const foods = [...new Set(detections.map(d => d[4]))];
 
   const results = [];
   for (const food of foods) {
